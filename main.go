@@ -2,11 +2,33 @@ package main
 
 import (
 	"fmt"
+	"strings"
 )
 
 const USDtoEUR = 0.85
 const USDtoRUB = 80.00
 const EURtoRUB = USDtoRUB / USDtoEUR
+
+var mapEUR = map[string]float64{
+	"RUB": USDtoRUB / USDtoEUR,
+	"USD": 1 / USDtoEUR,
+}
+
+var mapUSD = map[string]float64{
+	"RUB": USDtoRUB,
+	"EUR": USDtoEUR,
+}
+
+var mapRUB = map[string]float64{
+	"EUR": USDtoEUR / USDtoRUB,
+	"USD": 1 / USDtoRUB,
+}
+
+var mapConvert = map[string]map[string]float64{
+	"USD": mapUSD,
+	"EUR": mapEUR,
+	"RUB": mapRUB,
+}
 
 func main() {
 	fmt.Println("****__Currency converter__****")
@@ -24,38 +46,8 @@ func main() {
 }
 
 func exchange(baseCurrency string, amount float64, quoteCurrency string) float64 {
-	switch baseCurrency {
-	case "USD", "usd":
-		switch quoteCurrency {
-		case "EUR", "eur":
-			return amount * USDtoEUR
-		case "RUB", "rub":
-			return amount * USDtoRUB
-		default:
-			return 0
-		}
-	case "EUR", "eur":
-		switch quoteCurrency {
-		case "USD", "usd":
-			return amount / USDtoEUR
-		case "RUB", "rub":
-			return amount * EURtoRUB
-		default:
-			return 0
-		}
-	case "RUB", "rub":
-		switch quoteCurrency {
-		case "USD", "usd":
-			return amount / USDtoRUB
-		case "EUR", "eur":
-			return amount / EURtoRUB
-		default:
-			return 0
-		}
-	default:
-		return 0
-	}
-
+	multiplier := mapConvert[baseCurrency][quoteCurrency]
+	return amount * multiplier
 }
 
 func userInputBaseCurrency() string {
@@ -63,9 +55,10 @@ func userInputBaseCurrency() string {
 	for {
 		var baseCurrency string
 		fmt.Scan(&baseCurrency)
+		baseCurrency = strings.ToUpper(baseCurrency)
 		switch baseCurrency {
-		case "USD", "usd", "EUR", "eur", "RUB", "rub":
-			return baseCurrency
+		case "USD", "EUR", "RUB":
+			return (baseCurrency)
 		default:
 			fmt.Println("Invalid currency, enter USD|EUR|RUB:")
 		}
@@ -88,13 +81,14 @@ func userInputAmount() float64 {
 
 func userInputQuoteCurrency(baseCurrency string) string {
 	switch baseCurrency {
-	case "USD", "usd":
+	case "USD":
 		fmt.Println("Enter quote currency (EUR|RUB):")
 		for {
 			var quoteCurrency string
 			fmt.Scan(&quoteCurrency)
+			quoteCurrency = strings.ToUpper(quoteCurrency)
 			switch quoteCurrency {
-			case "EUR", "eur", "RUB", "rub":
+			case "EUR", "RUB":
 				return quoteCurrency
 			default:
 				fmt.Println("Invalid currency, enter EUR|RUB:")
@@ -105,8 +99,9 @@ func userInputQuoteCurrency(baseCurrency string) string {
 		for {
 			var quoteCurrency string
 			fmt.Scan(&quoteCurrency)
+			quoteCurrency = strings.ToUpper(quoteCurrency)
 			switch quoteCurrency {
-			case "USD", "usd", "RUB", "rub":
+			case "USD", "RUB":
 				return quoteCurrency
 			default:
 				fmt.Println("Invalid currency, enter USD|RUB:")
@@ -117,8 +112,9 @@ func userInputQuoteCurrency(baseCurrency string) string {
 		for {
 			var quoteCurrency string
 			fmt.Scan(&quoteCurrency)
+			quoteCurrency = strings.ToUpper(quoteCurrency)
 			switch quoteCurrency {
-			case "USD", "usd", "EUR", "eur":
+			case "USD", "EUR":
 				return quoteCurrency
 			default:
 				fmt.Println("Invalid currency, enter USD|EUR:")
